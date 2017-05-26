@@ -8,6 +8,7 @@ package com.example.maow6390.mymappapp;
         import android.support.v4.app.FragmentActivity;
         import android.os.Bundle;
         import android.support.v4.content.ContextCompat;
+        import android.view.View;
         import android.widget.Toast;
 
         import com.google.android.gms.common.ConnectionResult;
@@ -28,7 +29,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener {
-
     private GoogleMap mMap;
     GoogleApiClient mGoogleApiClient;
     Location mLastLocation;
@@ -48,17 +48,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
     }
+    public void toggleView(View view) {
+        int tmp = mMap.getMapType();
+        if (tmp == 2) {
+            mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+        }
+        else {
+            mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+        }
 
-
+    }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+        mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         LatLng birth = new LatLng(39.1836, -96.5717);
         mMap.addMarker(new MarkerOptions().position(birth).title("Born here"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(birth));
-        //mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+
         //Initialize Google Play Services
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(this,
@@ -116,7 +124,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(latLng);
         markerOptions.title("Current Position");
-        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
         mCurrLocationMarker = mMap.addMarker(markerOptions);
 
         //move map camera
