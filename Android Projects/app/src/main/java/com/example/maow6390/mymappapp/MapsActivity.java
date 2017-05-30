@@ -1,29 +1,31 @@
 package com.example.maow6390.mymappapp;
 
-        import android.Manifest;
-        import android.content.pm.PackageManager;
-        import android.location.Location;
-        import android.os.Build;
-        import android.support.v4.app.ActivityCompat;
-        import android.support.v4.app.FragmentActivity;
-        import android.os.Bundle;
-        import android.support.v4.content.ContextCompat;
-        import android.view.View;
-        import android.widget.Toast;
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationManager;
+import android.os.Build;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.FragmentActivity;
+import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
+import android.util.Log;
+import android.view.View;
+import android.widget.Toast;
 
-        import com.google.android.gms.common.ConnectionResult;
-        import com.google.android.gms.common.api.GoogleApiClient;
-        import com.google.android.gms.location.LocationListener;
-        import com.google.android.gms.location.LocationRequest;
-        import com.google.android.gms.location.LocationServices;
-        import com.google.android.gms.maps.CameraUpdateFactory;
-        import com.google.android.gms.maps.GoogleMap;
-        import com.google.android.gms.maps.OnMapReadyCallback;
-        import com.google.android.gms.maps.SupportMapFragment;
-        import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-        import com.google.android.gms.maps.model.LatLng;
-        import com.google.android.gms.maps.model.Marker;
-        import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks,
@@ -34,9 +36,52 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     Location mLastLocation;
     Marker mCurrLocationMarker;
     LocationRequest mLocationRequest;
+    private LocationManager locationManager;
+    private boolean isGPSEnabled = false;
+    private boolean isNetworkEnabled = false;
+    private boolean canGetLocation = false;
+    private static final long MIN_TIME_BW_UPDATES = 1000 * 15;
+    private static final float MIN_DISTANCE_CHANGE_FOR_UPDATES = 5.0f;
 
+
+    public void getLocation() {
+        try {
+            locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+            // get GPS status
+            isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+            if (isGPSEnabled)
+                Log.d("MyMaps", "getLocation: GPS is enabled");
+            //get Netowrk statu
+            isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+            if (isNetworkEnabled)
+                Log.d("MyMaps", "getLocation : network is enabled");
+
+            if (!isNetworkEnabled || !isGPSEnabled) {
+                Log.d("MyMaps", "getLocation : no provide enabled");
+            } else {
+                canGetLocation = true;
+                if (isGPSEnabled) {
+                    Log.d("MyMaps", "getLocation: GPS Enabled - reuqesting location updates");
+                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, locationListenerGPS);
+                    Log.d("MyMaps", "getLocation: Network GPS update request success");
+                    Toast.makeText(this, "Using GPS", Toast.LENGTH_SHORT);
+                }
+                if (isNetworkEnabled) {
+                    Log.d("MyMaps", "getLocation: Network Enabled - reuqesting location updates");
+                    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, locationListenerGPS);
+                    Log.d("MyMaps", "getLocation: Network update request success");
+                    Toast.makeText(this, "Using Network", Toast.LENGTH_SHORT);
+                }
+            }
+        } catch (Exception e) {
+            Log.d("MyMaps", "Caught an exception in getLocation");
+            e.printStackTrace();
+        }
+    }
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+
+    protected void onCreate (Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
@@ -48,6 +93,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
     }
+
     public void toggleView(View view) {
         int tmp = mMap.getMapType();
         if (tmp == 2) {

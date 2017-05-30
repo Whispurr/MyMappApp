@@ -15,6 +15,19 @@
         android:text="Change View"
         android:id="@+id/button_changeView"
         android:onClick="toggleView" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Search POI"
+        android:id="@+id/button_searchPOI"
+        android:onClick="searchPOI" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/editText"
+        android:layout_weight="1" />
 </LinearLayout>
 <fragment xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:map="http://schemas.android.com/apk/res-auto"
