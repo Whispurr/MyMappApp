@@ -10,18 +10,24 @@
     android:layout_height="48dp">
 
     <Button
-        android:layout_width="wrap_content"
+        android:layout_width="74dp"
         android:layout_height="wrap_content"
         android:text="Change View"
         android:id="@+id/button_changeView"
         android:onClick="toggleView" />
 
     <Button
-        android:layout_width="wrap_content"
+        android:layout_width="68dp"
         android:layout_height="wrap_content"
         android:text="Search POI"
         android:id="@+id/button_searchPOI"
         android:onClick="searchPOI" />
+
+    <Button
+        android:layout_width="79dp"
+        android:layout_height="wrap_content"
+        android:text="Trck me"
+        android:id="@+id/button" />
 
     <EditText
         android:layout_width="wrap_content"
@@ -35,7 +41,7 @@
     android:id="@+id/map"
     android:name="com.google.android.gms.maps.SupportMapFragment"
     android:layout_width="382dp"
-    android:layout_height="460dp"
+    android:layout_height="467dp"
     tools:context="com.example.maow6390.mymappapp.MapsActivity" />
 
 </LinearLayout>
