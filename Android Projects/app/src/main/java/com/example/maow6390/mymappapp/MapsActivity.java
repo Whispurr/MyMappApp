@@ -62,7 +62,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         editSearch = (EditText) findViewById(R.id.editText_Search);
         //initializing edit search here, and then loading the map
-        Log.d("MyMapApp", "test if edit text is intialized " + editSearch.toString());
         setContentView(R.layout.activity_maps);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
