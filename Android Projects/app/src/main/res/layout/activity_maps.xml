@@ -5,37 +5,42 @@
     android:orientation="vertical"
     android:onClick="toggleView">
 
-<LinearLayout
+    <LinearLayout
     android:layout_width="match_parent"
     android:layout_height="48dp">
 
     <Button
-        android:layout_width="74dp"
+        android:id="@+id/buttonView"
+        android:layout_width="60dp"
         android:layout_height="wrap_content"
-        android:text="Change View"
-        android:id="@+id/button_changeView"
+        android:text="View"
         android:onClick="toggleView" />
 
     <Button
-        android:layout_width="68dp"
+        android:id="@+id/buttonTrack"
+        android:layout_width="50dp"
         android:layout_height="wrap_content"
-        android:text="Search POI"
-        android:id="@+id/button_searchPOI"
-        android:onClick="searchPOI" />
-
-    <Button
-        android:layout_width="79dp"
-        android:layout_height="wrap_content"
-        android:text="Trck me"
-        android:id="@+id/button"
+        android:text="TRK"
         android:onClick="trackMe" />
 
-    <EditText
+        <Button
+        android:id="@+id/buttonSearch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/editText"
-        android:layout_weight="1" />
-</LinearLayout>
+        android:text="Search"
+        android:onClick="searchPOI"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Clear"
+        android:onClick="clearMarkers"/>
+
+        <EditText
+            android:id="@+id/editText_Search"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+    </LinearLayout>
 <fragment xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:map="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"

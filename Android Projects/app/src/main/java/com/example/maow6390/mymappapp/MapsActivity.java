@@ -1,6 +1,8 @@
 package com.example.maow6390.mymappapp;
 
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.location.LocationProvider;
@@ -13,6 +15,7 @@ import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -30,11 +33,14 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.IOException;
+import java.util.List;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private GoogleApiClient mGoogleApiClient;
-
+    private EditText editSearch;
     private LocationManager locationManager;
     private boolean isGPSenabled = false;
     private boolean isNetworkEnabled = false;
@@ -54,6 +60,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        editSearch = (EditText) findViewById(R.id.editText_Search);
+        //initializing edit search here, and then loading the map
+        Log.d("MyMapApp", "test if edit text is intialized " + editSearch.toString());
         setContentView(R.layout.activity_maps);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -62,6 +71,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public void toggleView(View view) {
         int holder = mMap.getMapType();
+        // if the map type integer is 1 (aka normal) it switches it to satillete else it turns it to normal (because its satillete)
         if (holder == 1) {
             mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
 
@@ -70,16 +80,43 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    public void searchPOI(View view) throws IOException {
+        Geocoder myGeo = new Geocoder(this.getApplicationContext());
+        //using geocoder, searchers for all matching thins to the edit search input, within 5 miles square (aka 0.07 degrees of lattitude/longetude)
+        if(mLastLocation != null && editSearch.getText() !=null) {
+            List<Address> holder = myGeo.getFromLocationName(editSearch.getText().toString(), 3, mLastLocation.getLatitude() - .07246, mLastLocation.getLongitude() - .07246, mLastLocation.getLatitude() + .07246, mLastLocation.getLongitude() + .07246);
+            for (int i = 0; i < holder.size(); i++) {
+                LatLng poi = new LatLng(holder.get(i).getLatitude(), holder.get(i).getLongitude());
+                mMap.addMarker(new MarkerOptions().position(poi).title(holder.get(i).getAddressLine(0)));
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(poi, My_LOC_ZOOM_FACTOR));
+
+            }
+            Toast.makeText(this.getApplicationContext(), "Search Completed; Markers added", Toast.LENGTH_SHORT).show();
+            Log.d("MyMapApp", "searching POI");
+        }
+    }
+    public void clearMarkers(View view){
+        Log.d("MyMapApp", "markers cleared");
+        mMap.clear();
+        //cleared all markers
+        LatLng birthplace = new LatLng(39.1836, -96.5717);
+        //add back birth marker
+        mMap.addMarker(new MarkerOptions().position(birthplace).title("Born here"));
+    }
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
 
         mMap = googleMap;
+        //adds the brithplace once the map is done loading (By dropping a marker)
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         LatLng birthplace = new LatLng(39.1836, -96.5717);
         mMap.addMarker(new MarkerOptions().position(birthplace).title("Born here"));
+        editSearch = (EditText) findViewById(R.id.editText_Search);
     }
 
     public void getLocation() {
+        //tries permissions
         try {
             locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
@@ -96,6 +133,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             else {
                 canGetLocation = true;
                 if (isGPSenabled) {
+                    // does GPS first
                     Log.d("MyMapsApp", "getLocation: GPS enabled - requesting location updates");
                     isGPS = true;
                     if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -109,6 +147,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     Toast.makeText(this, "Using GPS", Toast.LENGTH_SHORT).show();
 
                 }
+                // does network 2nd
                 if (isNetworkEnabled) {
                     Log.d("MyMapsApp", "getLocation: Network enabled - requesting location updates");
                     isGPS = false;
@@ -138,7 +177,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         } else {
             markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
             Log.d("MapsActivity", "Dropped Network Marker" + location.getAccuracy());
-
+            // if the marker is GPS it sets the color to BLUE, otherwise it set the location to MAGENTA. The bool is flipped each GPS/Network
         }
         mMap.addMarker(markerOptions);
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, My_LOC_ZOOM_FACTOR));
@@ -147,6 +186,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
     public void trackMe(View view) {
+        //called on button press. Toggles location on if off and off if on
         if (isTrack) {
             isTrack = false;
             if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -170,6 +210,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     android.location.LocationListener locationListenerGPS = new android.location.LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
+            mLastLocation = location;
+            //drops marker at the location, only called if the location is different. Also performs a permissions check first
             dropMarker(location);
             if (ActivityCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 return;
@@ -179,7 +221,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         @Override
         public void onStatusChanged(String provider, int status, Bundle extras) {
-
+    // a switch statement/ If GPS is available it uses GPS. If it any other result or the default is returned it logs unavialbe and returns
             switch (status) {
 
                 case LocationProvider.AVAILABLE:
@@ -236,6 +278,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     android.location.LocationListener locationListenerNetwork = new android.location.LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
+            // if location has changed the marker is dropped (according to network)
+            mLastLocation = location;
             dropMarker(location);
             if (ActivityCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 return;
